@@ -64,7 +64,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-3. Open your browser and go to `http://localhost:5000`
+3. Open your browser and go to `http://localhost:5030`
 
 ## Usage
 
