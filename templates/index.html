@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Random Song Picker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1DB954, #191414);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        button {
+            background: #1DB954;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background: #1ed760;
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .loader {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1DB954;
+            border-radius: 50%;
+            margin: 2rem auto;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 2rem;
+            display: none;
+            cursor: pointer;
+            padding: 1rem;
+            border-radius: 10px;
+            transition: background-color 0.2s;
+        }
+
+        .result:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .song-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .artist-name {
+            font-size: 1.2rem;
+            color: #1DB954;
+            text-decoration: none;
+        }
+
+        .click-hint {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .error-message {
+            color: #ff4444;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Spotify Random Song Picker</h1>
+        <button id="generateBtn">Get Random Song</button>
+        <div class="loader" id="loader"></div>
+        <div class="result" id="result">
+            <div class="song-title" id="songTitle"></div>
+            <div class="artist-name" id="artistName"></div>
+            <div class="click-hint" id="clickHint">Click to search on Spotify</div>
+        </div>
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            const button = document.getElementById('generateBtn');
+            const loader = document.getElementById('loader');
+            const result = document.getElementById('result');
+            const errorMessage = document.getElementById('errorMessage');
+            const songTitle = document.getElementById('songTitle');
+            const artistName = document.getElementById('artistName');
+            const clickHint = document.getElementById('clickHint');
+
+            // Reset display
+            result.style.display = 'none';
+            errorMessage.style.display = 'none';
+            clickHint.style.display = 'none';
+            button.disabled = true;
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch('/get_random_song');
+                const data = await response.json();
+
+                if (data.success) {
+                    songTitle.textContent = data.song;
+                    artistName.textContent = data.artist;
+                    result.style.display = 'block';
+                    clickHint.style.display = 'block';
+                    
+                    // Add click handler for the result
+                    result.onclick = () => {
+                        const searchQuery = encodeURIComponent(`${data.song} ${data.artist}`);
+                        window.open(`https://open.spotify.com/search/${searchQuery}`, '_blank');
+                    };
+                } else {
+                    errorMessage.textContent = data.error || 'An error occurred';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Failed to connect to the server';
+                errorMessage.style.display = 'block';
+            } finally {
+                loader.style.display = 'none';
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html> 
